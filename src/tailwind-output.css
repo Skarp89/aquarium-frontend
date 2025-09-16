@@ -545,109 +545,6 @@ video {
   display: none;
 }
 
-.fixed {
-  position: fixed;
-}
-
-.absolute {
-  position: absolute;
-}
-
-.relative {
-  position: relative;
-}
-
-.m-4 {
-  margin: 1rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.flex {
-  display: flex;
-}
-
-.max-w-sm {
-  max-width: 24rem;
-}
-
-.transform {
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.rounded-xl {
-  border-radius: 0.75rem;
-}
-
-.border {
-  border-width: 1px;
-}
-
-.bg-blue-500 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
-}
-
-.p-6 {
-  padding: 1.5rem;
-}
-
-.text-base {
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.text-white {
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.shadow-lg {
-  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.transition {
-  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Reset & base styles */
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f4ff;
-  /* light blue background */
-  color: #0d1f3c;
-  /* dark blue text */
-}
-
-h1, h2 {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #0d3b8c;
-  /* stronger blue for headings */
-}
-
 /* Card styling */
 
 .card {
@@ -670,60 +567,20 @@ h1, h2 {
 
 /* Delete button */
 
-.card .delete-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  border: none;
-  background: #ff4d4f;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  font-weight: bold;
-  line-height: 16px;
-  text-align: center;
-}
-
 /* Add item section */
 
-.add-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  background: #e7f1ff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* Inputs & select */
+/* Inputs & select inside add-item or card */
 
 .add-item input,
-.add-item select,
-.card input,
-.card select {
+  .add-item select,
+  .card input,
+  .card select {
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #ccc;
 }
 
-/* Buttons */
-
-button {
-  padding: 5px 10px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  background-color: #0d6efd;
-  color: white;
-  transition: background-color 0.2s;
-}
-
-button:hover {
-  background-color: #0b5ed7;
-}
+/* Generic buttons */
 
 /* Notification toast */
 
@@ -738,3 +595,44 @@ button:hover {
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   z-index: 100;
 }
+
+/* Modal backdrop & content */
+
+.fixed {
+  position: fixed;
+}
+
+.relative {
+  position: relative;
+}
+
+.flex {
+  display: flex;
+}
+
+.border {
+  border-width: 1px;
+}
+
+/* ---------------- Base & reset styles ---------------- */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f4ff;
+  /* light blue background */
+  color: #0d1f3c;
+  /* dark blue text */
+}
+
+h1, h2 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #0d3b8c;
+  /* stronger blue for headings */
+}
+
+/* ---------------- Components ---------------- */

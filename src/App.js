@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { Pencil } from "lucide-react";
+import Card from "./components/Card";
+import EditModal from "./components/EditModal";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://aquarium-backend-5mo3.onrender.com";
+const API_URL =
+  process.env.REACT_APP_API_URL ||
+  "https://aquarium-backend-5mo3.onrender.com";
 
 const App = () => {
-  const [stock, setStock] = useState({ fish: [], invertebrates: [], corals: [] });
-  const [editingItem, setEditingItem] = useState(null); // { originalType, index }
-  const [editValues, setEditValues] = useState({ name: "", quantity: 1, type: "fish" });
-  const [newItem, setNewItem] = useState({ type: "fish", name: "", quantity: 1 });
+  const [stock, setStock] = useState({
+    fish: [],
+    invertebrates: [],
+    corals: [],
+  });
+
+  const [newItem, setNewItem] = useState({
+    type: "fish",
+    name: "",
+    quantity: 1,
+  });
+
   const [notification, setNotification] = useState("");
 
-  // ---------------- Fetch stock ----------------
+  // Modal & editing state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null); // { type, index }
+  const [editValues, setEditValues] = useState({
+    name: "",
+    quantity: 1,
+    type: "fish",
+    names: [],
+    photo: "",
+  });
+
+  // Fetch stock
   useEffect(() => {
     fetch(`${API_URL}/stock`)
       .then((res) => res.json())
@@ -18,7 +40,7 @@ const App = () => {
       .catch((err) => console.error("Error fetching stock:", err));
   }, []);
 
-  // ---------------- Sorting ----------------
+  // Sorting
   const sortStock = (data) => {
     const sorted = { ...data };
     Object.keys(sorted).forEach((type) => {
@@ -27,178 +49,84 @@ const App = () => {
     return sorted;
   };
 
-  // ---------------- Notifications ----------------
+  // Notifications
   const showNotification = (msg) => {
     setNotification(msg);
     setTimeout(() => setNotification(""), 2000);
   };
 
-  // ---------------- Save Stock ----------------
-  const saveStock = (updatedStock, msg) => {
-    fetch(`${API_URL}/stock`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedStock),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setStock(sortStock(updatedStock));
-        if (msg) showNotification(msg);
-      })
-      .catch((err) => console.error("Error saving stock:", err));
-  };
-
-  // ---------------- Edit Handlers ----------------
-  const handleEditClick = (type, index) => {
-    const item = stock[type][index];
-    setEditingItem({ originalType: type, index });
-    setEditValues({ name: item.name, quantity: item.quantity, type });
-  };
-
-  const handleEditChange = (field, value) => {
-    setEditValues((prev) => ({
-      ...prev,
-      [field]: field === "quantity" ? parseInt(value) || 0 : value,
-    }));
-  };
-
-  const handleEditSave = async () => {
-    const { originalType, index } = editingItem;
-    const originalItem = stock[originalType][index];
-
+  // Save stock to backend
+  const saveStock = async (updatedStock, msg) => {
     try {
-      const res = await fetch(`${API_URL}/stock/${encodeURIComponent(originalItem.name)}`, {
-        method: "PUT",
+      const res = await fetch(`${API_URL}/stock`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          newName: editValues.name,
-          newType: editValues.type,
-          quantity: editValues.quantity,
-        }),
+        body: JSON.stringify(updatedStock),
       });
-
-      const updatedStock = await res.json();
+      if (!res.ok) throw new Error("Failed to save stock");
       setStock(sortStock(updatedStock));
-      setEditingItem(null);
-      showNotification("Item updated!");
+      if (msg) showNotification(msg);
+      return true;
     } catch (err) {
-      console.error("Error updating item:", err);
+      console.error("Error saving stock:", err);
+      showNotification("Failed to save stock");
+      return false;
     }
   };
 
-  // ---------------- Add Handlers ----------------
+  // Add handlers
   const handleAddChange = (field, value) => {
-    setNewItem({ ...newItem, [field]: field === "quantity" ? parseInt(value) || 1 : value });
+    setNewItem({
+      ...newItem,
+      [field]: field === "quantity" ? parseInt(value) || 1 : value,
+    });
   };
 
   const handleAddItem = () => {
     if (!newItem.name) return;
     const updatedStock = { ...stock };
-    updatedStock[newItem.type].push({ name: newItem.name, quantity: newItem.quantity });
+    updatedStock[newItem.type].push({
+      name: newItem.name,
+      quantity: newItem.quantity,
+      names: [],
+      photo: "",
+    });
     saveStock(updatedStock, "Item added!");
     setNewItem({ type: "fish", name: "", quantity: 1 });
   };
 
-  // ---------------- Delete Handler ----------------
-  const handleDelete = (type, index) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
-    const updatedStock = { ...stock };
-    updatedStock[type].splice(index, 1);
-    saveStock(updatedStock, "Item deleted!");
-  };
-
-  // ---------------- Render Column ----------------
+  // Render column
   const renderColumn = (type) => (
     <div style={{ flex: 1, margin: "0 10px" }}>
-      <h2 style={{ textAlign: "center" }}>{type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+      <h2 style={{ textAlign: "center" }}>
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </h2>
       {stock[type].map((item, index) => (
-        <div
+        <Card
           key={index}
-          style={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "10px",
-            padding: "10px",
-            borderRadius: "8px",
-            background: "#cfe2ff",
-            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-            transition: "transform 0.1s, box-shadow 0.1s",
+          item={{ ...item, type }}
+          onSelect={() => {
+            setEditingItem({ type, index });
+            const currentItem = stock[type][index];
+            setEditValues({
+              name: currentItem.name,
+              quantity: currentItem.quantity,
+              type,
+              names: currentItem.names || [],
+              photo: currentItem.photo || "",
+            });
+            setIsModalOpen(true);
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
-          }}
-        >
-          {/* Delete Button */}
-          <button
-            onClick={() => handleDelete(type, index)}
-            style={{
-              position: "absolute",
-              top: "5px",
-              right: "5px",
-              border: "none",
-              background: "#ff4d4f",
-              color: "white",
-              borderRadius: "50%",
-              width: "20px",
-              height: "20px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            ×
-          </button>
-
-          {editingItem && editingItem.originalType === type && editingItem.index === index ? (
-            <>
-              <input
-                type="text"
-                value={editValues.name}
-                onChange={(e) => handleEditChange("name", e.target.value)}
-                style={{ flex: 2, marginRight: "5px" }}
-              />
-              <input
-                type="number"
-                value={editValues.quantity}
-                onChange={(e) => handleEditChange("quantity", e.target.value)}
-                style={{ width: "60px", marginRight: "5px" }}
-              />
-              <select
-                value={editValues.type}
-                onChange={(e) => handleEditChange("type", e.target.value)}
-                style={{ marginRight: "5px" }}
-              >
-                <option value="fish">Fish</option>
-                <option value="invertebrates">Invertebrates</option>
-                <option value="corals">Corals</option>
-              </select>
-              <button onClick={handleEditSave}>Save</button>
-            </>
-          ) : (
-            <>
-              <span>{item.name} ({item.quantity})</span>
-              <Pencil
-                size={16}
-                style={{ cursor: "pointer" }}
-                onClick={() => handleEditClick(type, index)}
-              />
-            </>
-          )}
-        </div>
+        />
       ))}
     </div>
   );
 
-  // ---------------- Render ----------------
   return (
     <div style={{ padding: "20px" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Aquarium Stock</h1>
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+        Aquarium Stock
+      </h1>
 
       {notification && (
         <div
@@ -256,11 +184,46 @@ const App = () => {
       </div>
 
       {/* Columns */}
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+        }}
+      >
         {renderColumn("fish")}
         {renderColumn("invertebrates")}
         {renderColumn("corals")}
       </div>
+
+      {/* Edit Modal */}
+      <EditModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        editValues={editValues}
+        onChange={(field, value) =>
+          setEditValues((prev) => ({
+            ...prev,
+            [field]: field === "quantity" ? parseInt(value) || 1 : value,
+          }))
+        }
+        onSave={async () => {
+          if (!editingItem) return;
+          const { type, index } = editingItem;
+          const updatedStock = { ...stock };
+          updatedStock[type][index] = { ...updatedStock[type][index], ...editValues };
+          const success = await saveStock(updatedStock, "Item updated!");
+          if (success) setIsModalOpen(false);
+        }}
+        onDelete={async () => {
+          if (!editingItem) return;
+          const { type, index } = editingItem;
+          const updatedStock = { ...stock };
+          updatedStock[type].splice(index, 1);
+          const success = await saveStock(updatedStock, "Item deleted!");
+          if (success) setIsModalOpen(false);
+        }}
+      />
     </div>
   );
 };
